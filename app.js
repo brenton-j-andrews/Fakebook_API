@@ -4,24 +4,21 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// My imported modules.
-let mongoose = require('mongoose');
+// Modules.
+let passport = require('passport');
 let dotenv = require('dotenv').config();
+let bodyParser = require('body-parser');
 
-// Route imports.
+// Route and auth module imports.
+require('./auth/auth');
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const secureRoutes = require('./routes/secureRoutes');
 
-// Model imports.
-let user = require('./models/user');
+// Model and database config imports.
+require('./config/database');
+let UserModel = require('./models/user');
 
 var app = express();
-
-// Mongoose Connection Configuration.
-let mongoDB = process.env.MONGODB_URL;
-mongoose.connect( mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -32,10 +29,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(bodyParser.urlencoded({ extended: false }));
+
+
 // Use route modules.
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
+app.use('/user', passport.authenticate('jwt', { session: false }), secureRoutes );
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
