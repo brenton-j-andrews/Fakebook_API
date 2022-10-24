@@ -70,6 +70,7 @@ passport.use(
 
 // Verify JWT.
 passport.use(
+
     new JWTStrategy({
         secretOrKey: 'TOP_SECRET',
         jwtFromRequest: ExtractJwt.fromUrlQueryParameter('secret_token')
@@ -81,6 +82,7 @@ passport.use(
         }
 
         catch (error) {
+            console.log(error);
             done(error);
         }
     }

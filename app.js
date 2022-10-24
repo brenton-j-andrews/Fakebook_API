@@ -9,14 +9,12 @@ let passport = require('passport');
 let dotenv = require('dotenv').config();
 let bodyParser = require('body-parser');
 
-// Route and auth module imports.
-require('./auth/auth');
-var indexRouter = require('./routes/index');
-const secureRoutes = require('./routes/secureRoutes');
-
-// Model and database config imports.
+// Route, database and authentication module imports.
+require('./config/auth');
 require('./config/database');
-let UserModel = require('./models/user');
+let indexRouter = require('./routes/index');
+let secureRoutes = require('./routes/secureRoutes');
+
 
 var app = express();
 
