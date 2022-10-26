@@ -1,19 +1,10 @@
 var express = require('express');
+var router = express.Router();
+
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
-var router = express.Router();
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express.' });
-});
-
-router.get('/signup', function(req, res, next) {
-  res.send("hello!");
-})
-
-// POST request on sign-up page.
+// POST - User Sign Up.
 router.post('/signup',
   passport.authenticate('signup', { session: false }),
   async ( req, res, next ) => {
@@ -24,7 +15,7 @@ router.post('/signup',
   }
 )
 
-// POST request on user login page.
+// POST - User Log In.
 router.post('/login',
 
   async (req, res, next) => {
@@ -32,9 +23,6 @@ router.post('/login',
       'login',
 
       async (err, user, info) => {
-        console.log("error: " + err);
-        console.log("user: " + user);
-        console.log('info: ' + JSON.stringify(info));
 
         try {
           if (err || !user) {
@@ -59,10 +47,8 @@ router.post('/login',
           return next(error);
         }
       }
-    )(req, res, next);
+    ) (req, res, next);
   }
 );
-
-
 
 module.exports = router;

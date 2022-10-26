@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 // Modules.
+let cors = require('cors');
 let passport = require('passport');
 let dotenv = require('dotenv').config();
 let bodyParser = require('body-parser');
@@ -14,7 +15,6 @@ require('./config/auth');
 require('./config/database');
 let indexRouter = require('./routes/index');
 let secureRoutes = require('./routes/secureRoutes');
-
 
 var app = express();
 
@@ -26,13 +26,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// CORS config.
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:3000']
+}))
 
 // Use route modules.
 app.use('/', indexRouter);
 app.use('/user', passport.authenticate('jwt', { session: false }), secureRoutes );
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

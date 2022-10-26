@@ -22,9 +22,7 @@ UserSchema.pre(
 
 // Compare password.
 UserSchema.methods.isValidPassword = async function(password) {
-    console.log("Argument: " +  password)
     const user = this;
-    console.log("user password: " + user.password);
     const compare = await bcrypt.compare(password, user.password);
     return compare;
 }
