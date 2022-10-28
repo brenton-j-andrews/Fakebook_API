@@ -1,48 +1,99 @@
-var createError = require('http-errors');
 var express = require('express');
+var createError = require('http-errors');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// Modules.
+// Non-default modules.
+let mongoose = require('mongoose');
+let session = require('express-session');
 let cors = require('cors');
 let passport = require('passport');
-let dotenv = require('dotenv').config();
-let bodyParser = require('body-parser');
+let crypto = require('crypto');
 
-// Route, database and authentication module imports.
-require('./config/auth');
-require('./config/database');
-let indexRouter = require('./routes/index');
-let secureRoutes = require('./routes/secureRoutes');
+const db_connection = require('./config/database');
+const MongoStore = require('connect-mongo');
+require('dotenv').config();
+
+
+/**
+ * -------------- GENERAL SET UP ------------------------------------
+ */
+
 
 var app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// view engine setup
+/**
+ * -------------- SESSION SET UP ------------------------------------
+ */
+
+
+// const sessionStorage = new MongoStore({ mongooseConnection: db_connection, collection: 'sessions'});
+
+app.use(session({
+  secret: 'HELLO',
+  resave: false,
+  saveUninitialized: true,
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 
+  }
+}));
+
+/**
+ * -------------- VIEW ENGINE SET UP - REMOVE LATER -----------------
+ */
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.urlencoded({ extended: false }));
 
-// CORS config.
+
+/**
+ * -------------- CROSS ORIGIN RESOURCE CONFIG ----------------------
+ */
+
 app.use(cors({
   origin: ['http://localhost:3001', 'http://localhost:3000']
 }))
 
-// Use route modules.
-app.use('/', indexRouter);
-app.use('/user', passport.authenticate('jwt', { session: false }), secureRoutes );
+/**
+ * -------------- PASSPORT AUTHENTICATION ---------------------------
+ */
 
+require('./config/passport');
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// app.use((req, res, next) => {
+//   console.log(req.session);
+//   console.log(`User: ${req.user}`);
+//   next();
+// })
+
+/**
+ * -------------- ROUTES --------------------------------------------
+ */
+
+let indexRouter = require('./routes/index');
+
+app.use('/', indexRouter);
+
+
+/**
+ * -------------- ERROR HANDLING ------------------------------------
+ */
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
-
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -54,6 +105,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
 
 module.exports = app;
