@@ -4,7 +4,19 @@ const Schema = mongoose.Schema;
 require('dotenv').config();
 
 const mongoDB = process.env.MONGODB_URL;
-mongoose.connect( mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect( mongoDB,
+    { useNewUrlParser: true, useUnifiedTopology: true },
+    (error) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('connected.');
+        }
+    }
+    );
+
+
+
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', function() {

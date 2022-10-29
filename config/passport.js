@@ -1,9 +1,5 @@
-const express = require('express');
 const passport = require('passport');
-const mongoose = require('mongoose');
 const LocalStrategy = require('passport-local').Strategy;
-
-// const db_connection = require('./database');
 const User = require('../models/user');
 const validatePassword = require('../utilities/passwordUtilities').validatePassword;
 
@@ -13,7 +9,7 @@ const fields = {
 };
 
 const verifyCallback = (username, password, done) => {
-
+    console.log("hello?");
     User.findOne({ username : username})
         .then((user) => {
             // No errors, user not found.

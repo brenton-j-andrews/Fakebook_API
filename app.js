@@ -5,13 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 // Non-default modules.
-let mongoose = require('mongoose');
 let session = require('express-session');
 let cors = require('cors');
 let passport = require('passport');
-let crypto = require('crypto');
 
-const db_connection = require('./config/database');
 const MongoStore = require('connect-mongo');
 require('dotenv').config();
 
@@ -38,7 +35,7 @@ app.use(session({
   saveUninitialized: true,
   store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 
+    maxAge: 60 * 60 * 24 
   }
 }));
 
@@ -71,11 +68,12 @@ require('./config/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.use((req, res, next) => {
-//   console.log(req.session);
-//   console.log(`User: ${req.user}`);
-//   next();
-// })
+// Session tutorial middleware, delete later?
+app.use((req, res, next) => {
+  console.log(req.session);
+  console.log(req.user);
+  next();
+});
 
 /**
  * -------------- ROUTES --------------------------------------------
