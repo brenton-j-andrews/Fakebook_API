@@ -14,23 +14,53 @@ require('../config/database');
  * -------------- LOG-IN / AUTHENTICATION ROUTES --------------------
 */
 
-// // GET - User Log In. Refactor for client later.
-// router.get('/login', (req, res, next) => {
-//     const form = '<h1>Login Page</h1><form method="POST" action="/auth/login">\
-//     Enter Username:<br><input type="text" name="email">\
-//     <br>Enter Password:<br><input type="password" name="password">\
-//     <br><br><input type="submit" value="Submit"></form>';
+// GET - User Log In. Refactor for client later.
+router.get('/login', (req, res, next) => {
+  const form = '<h1>Login Page</h1><form method="POST" action="/auth/login">\
+  Enter Username:<br><input type="text" name="email">\
+  <br>Enter Password:<br><input type="password" name="password">\
+  <br><br><input type="submit" value="Submit"></form>';
 
-//     res.send(form);
-// });
+  res.send(form);
+});
 
-// // POST - User Log In.
-// router.post('/login', 
-//   passport.authenticate('local', {
-//     failureRedirect: '/auth/login-failure',
-//     successRedirect: '/auth/login-success' 
-//   })
-// );
+// POST - User Log In.
+router.post('/login', function(req, res, next) {
+  console.log(req.body);
+  User.findOne({ email: req.body.email })
+    .then((user) => {
+
+      // User not found in the database. ADD AMBIGUITY TO VALIDATION MESSAGES BEFORE DEPLOYMENT.
+      if(user === null) {
+        res.send({ success: false, msg: 'you entered the wrong email'});
+      }
+
+      else {
+        const isValid = utilities.validatePassword(req.body.password, user.hash, user.salt);
+
+        // If valid user, issue a JWT that can be attached to all request objects.
+        if (isValid) {
+          const tokenObejct = utilities.issueJWT(user);
+          res.send({ success: true, user: user, token: tokenObejct, expiresIn: tokenObejct.expires })
+        }
+
+        // Wrong password provided. ADD AMBIGUITY TO VALIDATION MESSAGES BEFORE DEPLOYMENT.
+        else {
+            res.status(401).json({ success: false, msg: 'you entered the wrong password'})
+          }
+      }
+    })
+
+    .catch((error) => {
+      console.log(error);
+      next(error);
+    })
+});
+
+// POST - Protected route, authentication required. For testing purposes!
+router.get('/protected', passport.authenticate('jwt', {session: false}),(req, res, next) => {
+  res.send("you are in the protected route now! Lets change the JWT expiration to see if you will get logged out...");
+})
 
 // // GET - User Log In Success! Redirect to PROFILE Page later on.
 // router.get('/login-success', (req, res, next) => {
@@ -60,7 +90,6 @@ require('../config/database');
 //     });
 // });
   
-
 /**
  * -------------- REGISTRATION ROUTES -------------------------------
 */
@@ -76,8 +105,7 @@ router.get('/register', (req, res, next) => {
 
 // POST - User Registration.
 router.post('/register', (req, res, next) => {
-  
-    console.log(req.body);
+
 
     const saltHash = utilities.generatePassword(req.body.password);
   
@@ -92,15 +120,14 @@ router.post('/register', (req, res, next) => {
     
   
     newUser.save()
-    .then((user) => {
-      const jwt = utilities.issueJWT(user);
-      res.json({ success: true, user: user, token: jwt.token, expiresIn: jwt.expires, msg: 'successful registration!' });
-    })
-    .catch((error) => {
-      console.log(error);
-      res.json({ msg : 'failed'})
-    })
-    ;
+      .then((user) => {
+        const jwt = utilities.issueJWT(user);
+        res.json({ success: true, user: user, token: jwt.token, expiresIn: jwt.expires, msg: 'successful registration!' });
+      })
+      .catch((error) => {
+        console.log(error);
+        res.json({ msg : 'failed'})
+      });
   
      
 });

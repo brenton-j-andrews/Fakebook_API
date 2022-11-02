@@ -17,31 +17,29 @@ function generatePassword(password) {
     }
 }
 
-
 function validatePassword(password, hash, salt) {
     let hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
     return hash === hashVerify;
 }
 
-
 function issueJWT(user) {
     const _id = user._id;
 
-    const expiresIn = '1d';
+    const expiresIn = 30 // 30 seconds for testing purposes.
 
     const payload = {
         sub: _id,
-        iat: Date.now()
+        iat: Math.floor(Date.now() / 1000)
     };
 
     const signedToken = jsonwebtoken.sign(payload, PRIV_KEY, { expiresIn: expiresIn, algorithm: 'RS256' });
-
+    console.log(signedToken);
+    
     return {
         token: "Bearer " + signedToken,
         expires: expiresIn
     }
 }
-
 
 module.exports.generatePassword = generatePassword;
 module.exports.validatePassword = validatePassword;
