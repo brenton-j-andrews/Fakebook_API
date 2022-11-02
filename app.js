@@ -26,16 +26,13 @@ app.use(express.urlencoded({ extended: false }));
  * -------------- SESSION SET UP ------------------------------------
  */
 
-
-// const sessionStorage = new MongoStore({ mongooseConnection: db_connection, collection: 'sessions'});
-
 app.use(session({
   secret: 'HELLO',
   resave: false,
   saveUninitialized: true,
   store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
   cookie: {
-    maxAge: 60 * 60 * 24 
+    maxAge: 10000
   }
 }));
 
@@ -43,12 +40,10 @@ app.use(session({
  * -------------- VIEW ENGINE SET UP - REMOVE LATER -----------------
  */
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use(bodyParser.urlencoded({ extended: false }));
+
 
 
 /**
@@ -63,17 +58,9 @@ app.use(cors({
  * -------------- PASSPORT AUTHENTICATION ---------------------------
  */
 
-require('./config/passport');
+require('./config/passport_jwt');
 
 app.use(passport.initialize());
-app.use(passport.session());
-
-// Session tutorial middleware, delete later?
-app.use((req, res, next) => {
-  console.log(req.session);
-  console.log(req.user);
-  next();
-});
 
 /**
  * -------------- ROUTES --------------------------------------------
