@@ -25,7 +25,7 @@ function validatePassword(password, hash, salt) {
 function issueJWT(user) {
     const _id = user._id;
 
-    const expiresIn = 30 // 30 seconds for testing purposes.
+    const expiresIn = 900 // 30 seconds for testing purposes.
 
     const payload = {
         sub: _id,

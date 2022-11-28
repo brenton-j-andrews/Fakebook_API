@@ -26,13 +26,12 @@ router.get('/login', (req, res, next) => {
 
 // POST - User Log In.
 router.post('/login', function(req, res, next) {
-  console.log(req.body);
   User.findOne({ email: req.body.email })
     .then((user) => {
 
-      // User not found in the database. ADD AMBIGUITY TO VALIDATION MESSAGES BEFORE DEPLOYMENT.
+      // User not found in the database.
       if(user === null) {
-        res.send({ success: false, msg: 'you entered the wrong email'});
+        res.send({ success: false, errorMessage: 'Incorrect Credentials Provided'});
       }
 
       else {
@@ -41,12 +40,12 @@ router.post('/login', function(req, res, next) {
         // If valid user, issue a JWT that can be attached to all request objects.
         if (isValid) {
           const tokenObejct = utilities.issueJWT(user);
-          res.send({ success: true, user: user, token: tokenObejct, expiresIn: tokenObejct.expires })
+          res.send({ success: true, user: user, token: tokenObejct, expiresIn: tokenObejct.expires });
         }
 
-        // Wrong password provided. ADD AMBIGUITY TO VALIDATION MESSAGES BEFORE DEPLOYMENT.
+        // Wrong password provided.
         else {
-            res.status(401).json({ success: false, msg: 'you entered the wrong password'})
+          res.send({ success: false, errorMessage: 'Incorrect Credentials Provided'});
           }
       }
     })
@@ -57,39 +56,6 @@ router.post('/login', function(req, res, next) {
     })
 });
 
-// POST - Protected route, authentication required. For testing purposes!
-router.get('/protected', passport.authenticate('jwt', {session: false}),(req, res, next) => {
-  res.send("you are in the protected route now! Lets change the JWT expiration to see if you will get logged out...");
-})
-
-// // GET - User Log In Success! Redirect to PROFILE Page later on.
-// router.get('/login-success', (req, res, next) => {
-//     console.log(req);
-//     res.json({ message : 'you are now logged in!' });
-// });
-  
-// // GET - User Log In Failure. Refactor for client later.
-// router.get('/login-failure', (req, res, next) => {
-//     res.json({errorMessage: "Incorrect username or password."});
-// });
-
-// // GET - User Data on log in. Protected Route.
-// router.get('/protected-route', isAuth, (req, res, next) => {
-//     console.log(req.user);
-//     const HTML = "<h1> You are in the protected route my man! </h1> <p><a href='/auth/logout'> Log Out </a></p>"
-//     res.send(HTML);
-// });
-
-// // GET - Use Log Out.
-// router.get('/logout', (req, res, next) => {
-//     req.logOut(function(error) {
-//       if (error) { 
-//         return next(error);
-//       }
-//       res.redirect('/auth/login');
-//     });
-// });
-  
 /**
  * -------------- REGISTRATION ROUTES -------------------------------
 */
@@ -105,7 +71,6 @@ router.get('/register', (req, res, next) => {
 
 // POST - User Registration.
 router.post('/register', (req, res, next) => {
-
 
     const saltHash = utilities.generatePassword(req.body.password);
   
@@ -128,8 +93,6 @@ router.post('/register', (req, res, next) => {
         console.log(error);
         res.json({ msg : 'failed'})
       });
-  
-     
 });
 
 module.exports = router;
