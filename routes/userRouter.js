@@ -14,4 +14,13 @@ router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res
     res.send("hello!")
 })
 
+// GET - Other users to add on clicking the search bar. Will add search parameter in a bit...
+router.get('/profile/search', passport.authenticate('jwt', {session: false}), (req, res, next) => {
+    User.find()
+    .then((result) => {
+        console.log(result.data);
+        res.send(result);
+    })
+})
+
 module.exports = router;

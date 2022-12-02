@@ -14,13 +14,12 @@ require('../config/database');
  * -------------- LOG-IN / AUTHENTICATION ROUTES --------------------
 */
 
-// GET - User Log In. Refactor for client later.
+// GET - User Log In. NOT USED BY THE CLIENT.
 router.get('/login', (req, res, next) => {
   const form = '<h1>Login Page</h1><form method="POST" action="/auth/login">\
   Enter Username:<br><input type="text" name="email">\
   <br>Enter Password:<br><input type="password" name="password">\
   <br><br><input type="submit" value="Submit"></form>';
-
   res.send(form);
 });
 
@@ -35,6 +34,8 @@ router.post('/login', function(req, res, next) {
       }
 
       else {
+        console.log(user);
+        console.log(user.fullName);
         const isValid = utilities.validatePassword(req.body.password, user.hash, user.salt);
 
         // If valid user, issue a JWT that can be attached to all request objects.
@@ -60,7 +61,7 @@ router.post('/login', function(req, res, next) {
  * -------------- REGISTRATION ROUTES -------------------------------
 */
 
-// GET - User Registration.
+// GET - User Registration. NOT USED BY THE CLIENT.
 router.get('/register', (req, res, next) => {
     const form = '<h1>Register Page</h1><form method="post" action="register">\
                     Enter Username:<br><input type="text" name="email">\
@@ -71,7 +72,7 @@ router.get('/register', (req, res, next) => {
 
 // POST - User Registration.
 router.post('/register', (req, res, next) => {
-
+    console.log(req.body);
     const saltHash = utilities.generatePassword(req.body.password);
   
     const salt = saltHash.salt;
@@ -79,6 +80,8 @@ router.post('/register', (req, res, next) => {
   
     const newUser = new User({
       email: req.body.email,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
       salt: salt,
       hash: hash
     })
