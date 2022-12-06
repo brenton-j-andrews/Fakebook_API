@@ -27,19 +27,42 @@ router.get('/profile/search', passport.authenticate('jwt', {session: false}), (r
 
 // POST - Send Friend Request to another user. 
 // Cannot get the auth headers sent from the client without it breaking, removing authentication for now...
-router.post('/friend_request', (req, res, next) => { 
-    console.log('am i here?');
-    User.findByIdAndUpdate(req.body.user_id, {
-        $push : { friends : req.body.recipient_id },
-        function (err, doc) {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log('how about here?');
+router.post('/friend_request', 
+
+    async (req, res, next) => {
+
+        const recipient_id  = req.body.recipient_id;
+        const sender_id = req.body.user_id;
+
+        try {
+            const sender = await User.findById({ _id : sender_id });
+            const recipient = await User.findById({ _id : recipient_id });
+
+            // If recipient is already a friend. None of these options should be possible via the client, but just in case!
+            if (sender.friends.includes(recipient_id)) {
+                return res.status(400).json({ message : `You are already friends with ${recipient.fullName}`});
+            }
+
+            // If request has already been sent to recipient.
+            else if (sender.friendRequestsSent.includes(recipient_id)) {
+                return res.status(400).json({ message : `You have already sent a friend request to ${recipient.fullName}`});
+            }
+
+            // Else, push the requesting user's id to recipients received requests array and vice versa.
+            else {
+                recipient.friendsRequestsRecieved.push(sender_id);
+                sender.friendRequestsSent.push(recipient_id);
+                recipient.save();
+                sender.save();
+                return res.status(201).json({ message : `Friend Request Sent to ${recipient.fullName}`});
             }
         }
-    })
-    res.send('hmmm');
-});
+
+        catch (error) {
+            console.log(error);
+            return res.status(500).json({ error : error.message });
+        }
+    }
+);
 
 module.exports = router;
