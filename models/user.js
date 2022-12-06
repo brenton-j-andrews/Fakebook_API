@@ -8,7 +8,8 @@ let UserSchema = new Schema({
     salt : { type: String },
     hash : { type: String },
     friends : [{ type: Schema.Types.ObjectId, ref: 'User'}],
-    friendRequests : [{ type: Schema.Types.ObjectId, ref: 'User'}],
+    friendRequestsSent : [{ type: Schema.Types.ObjectId, ref: 'User'}],
+    friendsRequestsRecieved : [{ type: Schema.Types.ObjectId, ref: 'User'}]
 }, {
     toJSON: { virtuals: true }
 });

@@ -34,11 +34,9 @@ router.post('/login', function(req, res, next) {
       }
 
       else {
-        console.log(user);
-        console.log(user.fullName);
         const isValid = utilities.validatePassword(req.body.password, user.hash, user.salt);
 
-        // If valid user, issue a JWT that can be attached to all request objects.
+        // If valid user, fetch user data, and issue a JWT that can be attached to all request objects.
         if (isValid) {
           const tokenObejct = utilities.issueJWT(user);
           res.send({ success: true, user: user, token: tokenObejct, expiresIn: tokenObejct.expires });
