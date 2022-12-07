@@ -11,31 +11,35 @@ const utilities = require('../utilities/authenticationUtilities')
 require('../config/database');
 
 // GET - Signed in user data for profile page.
-router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res, next) => {
-    User.findById({ _id : req.headers.userid }, { salt : 0, hash : 0})
-    .populate('friends', ['firstName', 'lastName'])
-    .then((result) => {
-        res.send(result)
-    })
-    .catch((error) => {
-        res.send(error);
-    })
-})
+router.get('/profile', passport.authenticate('jwt', {session: false}), 
+
+    (req, res, next) => {
+        User.findById({ _id : req.headers.userid }, { salt : 0, hash : 0})
+        .populate('friends', ['firstName', 'lastName'])
+        .then((result) => {
+            res.send(result)
+        })
+        .catch((error) => {
+            res.send(error);
+        })
+    }
+);
 
 // GET - Other users to add on clicking the search bar. Will add search parameter in a bit...
-router.get('/profile/search', passport.authenticate('jwt', {session: false}), (req, res, next) => {
-    User.find()
-    .then((result) => {
-        res.send(result);
-    })
-})
+router.get('/profile/search', passport.authenticate('jwt', {session: false}), 
+
+    (req, res, next) => {
+        User.find()
+        .then((result) => {
+            res.send(result);
+        })
+    }
+);
 
 // POST - Send Friend Request to another user. 
-// Cannot get the auth headers sent from the client without it breaking, removing authentication for now...
-router.post('/friend_request', 
+router.post('/friend_request', passport.authenticate('jwt', {session: false}),
 
     async (req, res, next) => {
-
         const recipient_id  = req.body.recipient_id;
         const sender_id = req.body.user_id;
 
@@ -76,8 +80,10 @@ router.post('/friend_request',
 );
 
 // PUT - Accept Friend Request from another user.
-router.put('/accept_request', 
+router.put('/accept_request', passport.authenticate('jwt', {session: false}),
+
     async (req, res, next) => {
+        console.log(req.headers.authorization);
         const recipientID  = req.body.recipient_id;
         const senderID = req.body.sender_id;
 
@@ -106,9 +112,10 @@ router.put('/accept_request',
 );
 
 // PUT - Decline Friend Request from another user.
-router.put('/decline_request',
+router.put('/decline_request', passport.authenticate('jwt', {session: false}),
+
     async (req, res, next) => {
-        console.log(req.body);
+
         const recipientID  = req.body.recipientID;
         const senderID = req.body.senderID;
 
@@ -123,7 +130,7 @@ router.put('/decline_request',
                 $pull : { friendRequestsSent : mongoose.Types.ObjectId(recipientID)}
             });
 
-            res.status(201).json({ message : 'Unfriended Successfully.'});
+            res.status(201).json({ message : 'Friend Request Declined.'});
         }
 
         catch {
@@ -134,7 +141,8 @@ router.put('/decline_request',
 );
 
 // PUT - Unfriend another user.
-router.put('/unfriend_user', 
+router.put('/unfriend_user', passport.authenticate('jwt', {session: false}),
+
     async (req, res, next) => {
         const signedInID  = req.body.signedInID;
         const unfriendID = req.body.unfriendID;
@@ -158,6 +166,6 @@ router.put('/unfriend_user',
             return res.status(401).json({ message: error });
         }
     }
-)
+);
 
 module.exports = router;
