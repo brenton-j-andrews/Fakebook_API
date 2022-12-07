@@ -11,7 +11,8 @@ let UserSchema = new Schema({
     friendRequestsSent : [{ type: Schema.Types.ObjectId, ref: 'User'}],
     friendsRequestsRecieved : [{ type: Schema.Types.ObjectId, ref: 'User'}]
 }, {
-    toJSON: { virtuals: true }
+    toJSON: { virtuals: true },
+    toObject : { virtuals: true }
 });
 
 UserSchema.virtual('fullName')
@@ -19,6 +20,6 @@ UserSchema.virtual('fullName')
     return `${this.firstName} ${this.lastName}`
 });
 
-const UserModel = mongoose.model('user', UserSchema);
+const UserModel = mongoose.model('User', UserSchema);
 
 module.exports = UserModel;
