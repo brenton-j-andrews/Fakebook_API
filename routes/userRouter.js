@@ -106,7 +106,32 @@ router.put('/accept_request',
 );
 
 // PUT - Decline Friend Request from another user.
-router.put('/decline_request');
+router.put('/decline_request',
+    async (req, res, next) => {
+        console.log(req.body);
+        const recipientID  = req.body.recipientID;
+        const senderID = req.body.senderID;
+
+        try {
+            // Update recipient user document. 
+            await User.updateOne({ _id : recipientID }, {
+                $pull : { friendsRequestsRecieved : mongoose.Types.ObjectId(senderID)}
+            });
+
+            // Update sender document.
+            await User.updateOne({ _id : senderID }, {
+                $pull : { friendRequestsSent : mongoose.Types.ObjectId(recipientID)}
+            });
+
+            res.status(201).json({ message : 'Unfriended Successfully.'});
+        }
+
+        catch {
+            console.log('Error: ', error);
+            return res.status(401).json({ message: error });
+        }
+    }
+);
 
 // PUT - Unfriend another user.
 router.put('/unfriend_user', 
@@ -120,6 +145,7 @@ router.put('/unfriend_user',
                 $pull : { friends : mongoose.Types.ObjectId(unfriendID)}
             });
 
+            // Update unfriended user document.
             await User.updateOne({ _id : unfriendID }, {
                 $pull : { friends : mongoose.Types.ObjectId(signedInID)}
             });
