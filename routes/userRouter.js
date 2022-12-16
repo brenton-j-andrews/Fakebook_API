@@ -1,4 +1,7 @@
-// All routes pertaining to authentication.
+/* 
+    All routes pertaining to fetching user data and friend request CRUD operations.
+*/
+
 var express = require("express");
 var router = express.Router();
 const passport = require('passport');
@@ -25,18 +28,18 @@ router.get('/profile', passport.authenticate('jwt', {session: false}),
     }
 );
 
-// GET - Other users to add on clicking the search bar. Will add search parameter in a bit...
-router.get('/profile/search', passport.authenticate('jwt', {session: false}), 
-
+// POST - Display other users on clicking the search bar, filtering by search string and returning the result to client. Add AUTH later?
+router.post('/profile/search',
     (req, res, next) => {
-        User.find()
+        console.log(req.body.string);
+        User.find({ firstName : {$regex : req.body.string, $options:'i'}})
         .then((result) => {
             res.send(result);
         })
     }
 );
 
-// POST - Send Friend Request to another user. 
+// POST - Send friend request to another user. 
 router.post('/friend_request', passport.authenticate('jwt', {session: false}),
 
     async (req, res, next) => {
@@ -79,11 +82,11 @@ router.post('/friend_request', passport.authenticate('jwt', {session: false}),
     }
 );
 
-// PUT - Accept Friend Request from another user.
+// PUT - Accept friend request from another user.
 router.put('/accept_request', passport.authenticate('jwt', {session: false}),
 
     async (req, res, next) => {
-        console.log(req.headers.authorization);
+
         const recipientID  = req.body.recipient_id;
         const senderID = req.body.sender_id;
 
@@ -111,7 +114,7 @@ router.put('/accept_request', passport.authenticate('jwt', {session: false}),
     }
 );
 
-// PUT - Decline Friend Request from another user.
+// PUT - Decline friend request from another user.
 router.put('/decline_request', passport.authenticate('jwt', {session: false}),
 
     async (req, res, next) => {
@@ -139,6 +142,36 @@ router.put('/decline_request', passport.authenticate('jwt', {session: false}),
         }
     }
 );
+
+// PUT - Cancel previously sent friend request.
+router.put('/cancel_request',  passport.authenticate('jwt', {session: false}), 
+
+    async (req, res, next) => {
+
+        const recipientID  = req.body.recipientID;
+        const senderID = req.body.senderID;
+
+        try {
+            // Update recipient user document. 
+            await User.updateOne({ _id : senderID }, {
+                $pull : { friendRequestsSent : mongoose.Types.ObjectId(recipientID)}
+            });
+
+            // Update sender document.
+            await User.updateOne({ _id : recipientID }, {
+                $pull : { friendsRequestsRecieved : mongoose.Types.ObjectId(senderID)}
+            });
+
+            res.status(201).json({ message : 'Friend Request Cancelled.'});
+        }
+
+        catch {
+            console.log('Error: ', error);
+            return res.status(401).json({ message: error });
+        }
+
+    }
+)
 
 // PUT - Unfriend another user.
 router.put('/unfriend_user', passport.authenticate('jwt', {session: false}),
@@ -169,3 +202,4 @@ router.put('/unfriend_user', passport.authenticate('jwt', {session: false}),
 );
 
 module.exports = router;
+

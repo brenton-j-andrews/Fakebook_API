@@ -1,7 +1,9 @@
-// All routes pertaining to authentication.
+/* 
+  All routes pertaining to authentication -> Login and SignUp
+*/
+
 var express = require("express");
 var router = express.Router();
-const passport = require('passport');
 
 // Model, function, middleware imports.
 const User = require('../models/user');

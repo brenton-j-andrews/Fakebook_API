@@ -9,7 +9,9 @@ let UserSchema = new Schema({
     hash : { type: String },
     friends : [{ type: Schema.Types.ObjectId, ref: 'User'}],
     friendRequestsSent : [{ type: Schema.Types.ObjectId, ref: 'User'}],
-    friendsRequestsRecieved : [{ type: Schema.Types.ObjectId, ref: 'User'}]
+    friendsRequestsRecieved : [{ type: Schema.Types.ObjectId, ref: 'User'}],
+    userPosts : [{ type: Schema.Types.ObjectId, ref: 'Post'}]
+    
 }, {
     toJSON: { virtuals: true },
     toObject : { virtuals: true }
