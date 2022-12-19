@@ -19,6 +19,7 @@ router.get('/profile', passport.authenticate('jwt', {session: false}),
     (req, res, next) => {
         User.findById({ _id : req.headers.userid }, { salt : 0, hash : 0})
         .populate('friends', ['firstName', 'lastName'])
+        .populate('userPosts')
         .then((result) => {
             res.send(result)
         })
