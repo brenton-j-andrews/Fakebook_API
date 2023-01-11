@@ -12,8 +12,8 @@ const Post = require('../models/post');
 const { body, validationResult } = require('express-validator');
 const { SchemaTypes, default: mongoose } = require('mongoose');
 
-// POST - Create new user post.w
-router.post( '/create_post', 
+// POST - Create new user post.
+router.post('/create_post', 
 
     body('postContent').isLength({ min: 1 }).withMessage('You cannot create an empty post.'),
 
@@ -63,14 +63,58 @@ router.post( '/create_post',
 // DELETE - Delete selected post and associated comments.
 router.delete('/delete_post', 
     (req, res, next) => {
-        console.log(req.headers.postid);
         Post.deleteOne({ _id : req.headers.postid })
         .then(result => {
-            console.log(result);
             res.status(200).json({ msg: 'Post has been deleted' });
         })
         .catch(error => {
             res.status(400).json({ msg: `Error: ${error}`})
+        })
+    }
+)
+
+// POST - Create new comment on post.
+router.post('/add_comment',
+    (req, res, next) => {
+
+    }
+)
+
+// POST - Like a post.
+router.post('/like_post', 
+
+    (req, res, next) => {
+        Post.updateOne(
+            { _id : req.body.postid }, 
+            {$addToSet : {postLikes : mongoose.Types.ObjectId(req.body.userid)}
+        })
+        .then(result => {
+            if (result.matchedCount === 1 && result.modifiedCount === 0) {
+                res.status(200).json({ msg : 'You have already liked this post.'});
+            } 
+            else {
+                res.status(200).json({ msg : 'Post has been liked'});
+            }
+
+        })
+        .catch(error => {
+            res.status(400).json({ msg: `Error: ${error}`});
+        })
+})
+
+// Post - Unlike a post.
+router.post('/unlike_post',
+    (req, res, next) => {
+        console.log(req.body)
+        Post.updateOne(
+            { _id : req.body.postid }, 
+            { $pull : {postLikes : mongoose.Types.ObjectId(req.body.userid)}
+        })
+        .then(result => {
+            res.status(200).json({ msg : 'Post like has been removed.'});
+        })
+        .catch(error => {
+            res.status(400).json({ msg: `Error: ${error}`});
         })
     }
 )
