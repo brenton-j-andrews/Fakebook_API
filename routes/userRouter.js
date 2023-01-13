@@ -92,15 +92,16 @@ router.put('/accept_request', passport.authenticate('jwt', {session: false}),
         const senderID = req.body.sender_id;
 
         try {
+            
             // Update request sender document. 
             await User.updateOne({ _id : senderID }, { 
-                $push : { friends : mongoose.Types.ObjectId(recipientID) }, 
+                $addToSet : { friends : mongoose.Types.ObjectId(recipientID) }, 
                 $pull : { friendRequestsSent : mongoose.Types.ObjectId(recipientID) }
             });
 
             // Update recipient document.
             await User.updateOne({ _id : recipientID }, {
-                $push : { friends :mongoose.Types.ObjectId(senderID) },
+                $addToSet : { friends :mongoose.Types.ObjectId(senderID) },
                 $pull : { friendsRequestsRecieved : mongoose.Types.ObjectId(senderID) }
             });
 

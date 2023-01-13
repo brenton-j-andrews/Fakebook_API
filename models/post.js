@@ -10,7 +10,9 @@ let PostSchema = new Schema({
     'postAuthor' : { type: Schema.Types.ObjectId, ref: 'User'},
     'postComment' : [{
         'comment' : { type : String, required: true },
-        'commentAuthor' : { type : Schema.Types.ObjectId, ref:'User', required: true }
+        'commentAuthorName' : { type : String , required: true },
+        'commentAuthorID' : { type : Schema.Types.ObjectId, ref:'User', required: true },
+        'commentLikes' : [{ type : Schema.Types.ObjectId, ref:'User', required: true }]
     }],
     'postLikes': [{ type : Schema.Types.ObjectId, ref:'User', required: true }]
 })
