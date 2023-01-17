@@ -112,14 +112,30 @@ router.post('/add_comment',
     }
 );
 
-// POST - Delete selected comment.
+// PUT - Delete a comment. -> 
+router.put('/delete_comment', 
+    (req, res, next) => {
+        console.log(req.body);
+        Post.updateOne(
+            { _id : req.body.postid },
+            { $pull : { postComment : { _id : mongoose.Types.ObjectId(req.body.commentid)}}
+        })
+        .then(result => {
+            console.log(result);
+            res.status(200).json({ 'msg' : 'Comment has been deleted.'});
+        })
+        .catch(error => {
+            res.status(400).json({ msg: `Error: ${error}`});
+        })
+    }
+)
 
-// TODO!!!
 
 // POST - Like a post.
 router.post('/like_post', 
 
     (req, res, next) => {
+
         Post.updateOne(
             { _id : req.body.postid }, 
             {$addToSet : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
@@ -138,12 +154,12 @@ router.post('/like_post',
         })
 })
 
-// Post - Unlike a post.
+// POST - Unlike a post.
 router.post('/unlike_post',
     (req, res, next) => {
         Post.updateOne(
             { _id : req.body.postid }, 
-            { $pull : {postLikes : mongoose.Types.ObjectId(req.body.userid)}
+            { $pull : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
         })
         .then(result => {
             res.status(200).json({ msg : 'Post like has been removed.'});
@@ -153,5 +169,7 @@ router.post('/unlike_post',
         })
     }
 )
+
+
 
 module.exports = router;
