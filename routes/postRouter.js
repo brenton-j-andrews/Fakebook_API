@@ -73,6 +73,45 @@ router.delete('/delete_post',
     }
 )
 
+// POST - Like a post.
+router.post('/like_post', 
+
+    (req, res, next) => {
+
+        Post.updateOne(
+            { _id : req.body.postid }, 
+            {$addToSet : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
+        })
+        .then(result => {
+            if (result.matchedCount === 1 && result.modifiedCount === 0) {
+                res.status(200).json({ msg : 'You have already liked this post.'});
+            } 
+            else {
+                res.status(200).json({ msg : 'Post has been liked'});
+            }
+
+        })
+        .catch(error => {
+            res.status(400).json({ msg: `Error: ${error}`});
+        })
+})
+
+// POST - Unlike a post.
+router.post('/unlike_post',
+    (req, res, next) => {
+        Post.updateOne(
+            { _id : req.body.postid }, 
+            { $pull : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
+        })
+        .then(result => {
+            res.status(200).json({ msg : 'Post like has been removed.'});
+        })
+        .catch(error => {
+            res.status(400).json({ msg: `Error: ${error}`});
+        })
+    }
+)
+
 // POST - Create new comment on post.
 router.post('/add_comment',
 
@@ -112,7 +151,7 @@ router.post('/add_comment',
     }
 );
 
-// PUT - Delete a comment. -> 
+// PUT - Delete a comment. 
 router.put('/delete_comment', 
     (req, res, next) => {
         console.log(req.body);
@@ -128,19 +167,19 @@ router.put('/delete_comment',
             res.status(400).json({ msg: `Error: ${error}`});
         })
     }
-)
+);
 
-
-// POST - Like a post.
-router.post('/like_post', 
+// PUT - Like a comment.
+router.put('/like_comment', 
 
     (req, res, next) => {
-
+        console.log(req.body);
         Post.updateOne(
-            { _id : req.body.postid }, 
-            {$addToSet : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
+            { _id : req.body.postid,  'postComment._id' : req.body.commentid }, 
+            { $addToSet : { 'postComment.$.commentLikes' : mongoose.Types.ObjectId(req.body.userid)}
         })
         .then(result => {
+            console.log(result);
             if (result.matchedCount === 1 && result.modifiedCount === 0) {
                 res.status(200).json({ msg : 'You have already liked this post.'});
             } 
@@ -152,23 +191,12 @@ router.post('/like_post',
         .catch(error => {
             res.status(400).json({ msg: `Error: ${error}`});
         })
-})
-
-// POST - Unlike a post.
-router.post('/unlike_post',
-    (req, res, next) => {
-        Post.updateOne(
-            { _id : req.body.postid }, 
-            { $pull : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
-        })
-        .then(result => {
-            res.status(200).json({ msg : 'Post like has been removed.'});
-        })
-        .catch(error => {
-            res.status(400).json({ msg: `Error: ${error}`});
-        })
     }
-)
+);
+
+// PUT - Unlike a comment.
+
+
 
 
 
