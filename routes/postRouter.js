@@ -118,36 +118,52 @@ router.post('/add_comment',
     body('commentContent').isLength({ min: 1 }).withMessage('Your comment cannot be empty.'),
 
     (req, res, next) => {
-
-        console.log(req.body);
-
+        console.log(req.body.userID);
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors : errors.array() });
         }
 
-        Post.updateOne(
-            { _id : req.body.postid },
-            { $push : 
-                { postComment : 
+        // 1. Get name of commenter via req.body.userid. 2. Push new comment to postComment array.
+        async.waterfall([
+
+            function(callback) {
+                User.findById({ _id : req.body.userID })
+                .then(user => {
+                    callback(null, user);
+                })
+            },
+
+            function(user, callback) {
+                Post.updateOne(
+                    { _id : req.body.postid }, 
+                    { 
+                        $push : 
+                            { postComment : 
+                                {
+                                    'comment' : req.body.commentContent,
+                                    'commentAuthorName' : user.fullName,
+                                    'commentAuthorID' : req.body.userID,
+                                    'commentLikes' : []
+                                }
+                            }      
+                    }, 
                     {
-                        'comment' : req.body.commentContent,
-                        'commentAuthorName' : req.body.username,
-                        'commentAuthorID' : req.body.userID,
-                        'commentLikes' : []
-                    }
-                }
+                        upsert : true
+                    })
+                .then((user) => {
+                    console.log(user);
+                })
+                callback(null, 'done');
+            }],
+
+        function(err, result) {
+            if (err) {
+                res.status(400).send({ msg : 'There was an async error...'});
             }
-        )
-        .then(result => {
-            console.log(result);
-            res.status(200).json({ msg : 'Comment Added'});
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(400).json({ msg: `Error: ${error}`});
-        })
+            res.status(200).json({ msg: 'Post created.' });
+        });
     }
 );
 
@@ -197,7 +213,7 @@ router.put('/like_comment',
 router.put('/unlike_comment',
 
     (req, res, next) => {
-        console.log(req.body);
+
         Post.updateOne(
             { _id : req.body.postid,  'postComment._id' : req.body.commentid }, 
             { $pull : { 'postComment.$.commentLikes' : mongoose.Types.ObjectId(req.body.userid)}

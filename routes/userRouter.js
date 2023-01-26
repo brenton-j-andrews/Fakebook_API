@@ -13,11 +13,18 @@ const utilities = require('../utilities/authenticationUtilities')
 
 require('../config/database');
 
-// GET - Signed in user data for profile page.
+// GET - Signed in user data for profile page. Get friend data if friend_id header is present.
 router.get('/profile', passport.authenticate('jwt', {session: false}), 
 
     (req, res, next) => {
-        User.findById({ _id : req.headers.userid }, { salt : 0, hash : 0})
+
+        if (req.headers.friendid) {
+            userQueryId = req.headers.friendid;
+        } else {
+            userQueryId = req.headers.userid;
+        }
+
+        User.findById({ _id : userQueryId }, { salt : 0, hash : 0})
         .populate('friends', ['firstName', 'lastName'])
         .populate('userPosts')
         .then((result) => {
@@ -32,7 +39,6 @@ router.get('/profile', passport.authenticate('jwt', {session: false}),
 // POST - Display other users on clicking the search bar, filtering by search string and returning the result to client. Add AUTH later?
 router.post('/profile/search',
     (req, res, next) => {
-        console.log(req.body.string);
         User.find({ firstName : {$regex : req.body.string, $options:'i'}})
         .then((result) => {
             res.send(result);
@@ -205,3 +211,4 @@ router.put('/unfriend_user', passport.authenticate('jwt', {session: false}),
 
 module.exports = router;
 
+// 

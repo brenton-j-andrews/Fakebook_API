@@ -11,11 +11,10 @@ let UserSchema = new Schema({
     friendRequestsSent : [{ type: Schema.Types.ObjectId, ref: 'User'}],
     friendsRequestsRecieved : [{ type: Schema.Types.ObjectId, ref: 'User'}],
     userPosts : [{ type: Schema.Types.ObjectId, ref: 'Post'}]
-    
-    // Activity log tracks user activity (friends added, posts created, comments added, posts liked.)
 }, {
     toJSON: { virtuals: true },
-    toObject : { virtuals: true }
+    toObject : { virtuals: true },
+    timestamps : true
 });
 
 UserSchema.virtual('fullName')
