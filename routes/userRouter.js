@@ -1,5 +1,6 @@
 /* 
     All routes pertaining to fetching user data and friend request CRUD operations.
+    NOTE: SECURITY WILL BE IMPROVED AT THE END OF PROJECT, NEED TO LEARN MORE AND PRACTICE WITH OTHER PROJECTS FIRST!
 */
 
 var express = require("express");
@@ -14,9 +15,9 @@ const utilities = require('../utilities/authenticationUtilities')
 require('../config/database');
 
 // GET - Signed in user data for profile page. Get friend data if friend_id header is present.
-router.get('/profile', passport.authenticate('jwt', {session: false}), 
+router.get('/profile',
 
-    (req, res, next) => {
+    (req, res) => {
 
         if (req.headers.friendid) {
             userQueryId = req.headers.friendid;
@@ -26,8 +27,9 @@ router.get('/profile', passport.authenticate('jwt', {session: false}),
 
         User.findById({ _id : userQueryId }, { salt : 0, hash : 0})
         .populate('friends', ['firstName', 'lastName'])
-        .populate('userPosts')
+        .populate('userPosts').sort({ "_id" : -1 })
         .then((result) => {
+            console.log(result.data);
             res.send(result)
         })
         .catch((error) => {
@@ -210,5 +212,3 @@ router.put('/unfriend_user', passport.authenticate('jwt', {session: false}),
 );
 
 module.exports = router;
-
-// 

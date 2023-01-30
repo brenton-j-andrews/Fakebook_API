@@ -5,6 +5,7 @@
 let express = require('express');
 let router = express.Router();
 let async  = require('async');
+const passport = require('passport');
 
 const User = require('../models/user');
 const Post = require('../models/post');
@@ -77,7 +78,7 @@ router.delete('/delete_post',
 router.post('/like_post', 
 
     (req, res, next) => {
-
+        
         Post.updateOne(
             { _id : req.body.postid }, 
             {$addToSet : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
@@ -99,6 +100,7 @@ router.post('/like_post',
 // POST - Unlike a post.
 router.post('/unlike_post',
     (req, res, next) => {
+
         Post.updateOne(
             { _id : req.body.postid }, 
             { $pull : { postLikes : mongoose.Types.ObjectId(req.body.userid) }
@@ -125,7 +127,8 @@ router.post('/add_comment',
             return res.status(400).json({ errors : errors.array() });
         }
 
-        // 1. Get name of commenter via req.body.userid. 2. Push new comment to postComment array.
+        // 1. Get name of commenter via req.body.userid. 
+        // 2. Push new comment to postComment array.
         async.waterfall([
 
             function(callback) {
@@ -155,10 +158,11 @@ router.post('/add_comment',
                 .then((user) => {
                     console.log(user);
                 })
+                
                 callback(null, 'done');
             }],
 
-        function(err, result) {
+        function(err) {
             if (err) {
                 res.status(400).send({ msg : 'There was an async error...'});
             }
@@ -170,13 +174,11 @@ router.post('/add_comment',
 // PUT - Delete a comment. 
 router.put('/delete_comment', 
     (req, res, next) => {
-        console.log(req.body);
         Post.updateOne(
             { _id : req.body.postid },
             { $pull : { postComment : { _id : mongoose.Types.ObjectId(req.body.commentid)}}
         })
         .then(result => {
-            console.log(result);
             res.status(200).json({ 'msg' : 'Comment has been deleted.'});
         })
         .catch(error => {
@@ -194,7 +196,6 @@ router.put('/like_comment',
             { $addToSet : { 'postComment.$.commentLikes' : mongoose.Types.ObjectId(req.body.userid)}
         })
         .then(result => {
-            console.log(result);
             if (result.matchedCount === 1 && result.modifiedCount === 0) {
                 res.status(200).json({ msg : 'You have already liked this post.'});
             } 
@@ -219,7 +220,6 @@ router.put('/unlike_comment',
             { $pull : { 'postComment.$.commentLikes' : mongoose.Types.ObjectId(req.body.userid)}
         })
         .then(result => {
-            console.log(result);
             if (result.matchedCount === 1 && result.modifiedCount === 0) {
                 res.status(200).json({ msg : 'You have already liked this post.'});
             } 
